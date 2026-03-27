@@ -1,0 +1,23 @@
+pre-commit:
+  jobs:
+    - name: staged diff sanity
+      run: git diff --cached --check
+    - name: staged file size
+      run: bash scripts/hooks/check-staged-file-sizes.sh
+    - name: staged secrets
+      run: bash scripts/hooks/check-staged-secrets.sh
+    - name: prettier
+      glob: '*.{css,js,jsx,json,md,mdx,ts,tsx,yaml,yml}'
+      run: bunx prettier --check {staged_files}
+    - name: eslint
+      glob: '*.{js,jsx,ts,tsx}'
+      run: bunx eslint --no-warn-ignored {staged_files}
+    - name: typecheck
+      files: echo package.json
+      run: bun run typecheck
+
+pre-push:
+  files: echo package.json
+  jobs:
+    - name: tests
+      run: bun run test --silent

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="128" fill="#1d6c63"/>
+  <g stroke="white" stroke-width="28" stroke-linecap="round" fill="none">
+    <!-- AudioLines icon centered at 256,256, scaled to ~280px -->
+    <line x1="256" y1="116" x2="256" y2="396"/>
+    <line x1="186" y1="186" x2="186" y2="326"/>
+    <line x1="116" y1="216" x2="116" y2="296"/>
+    <line x1="326" y1="186" x2="326" y2="326"/>
+    <line x1="396" y1="216" x2="396" y2="296"/>
+  </g>
+</svg>
