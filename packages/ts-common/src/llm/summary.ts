@@ -67,7 +67,7 @@ const resolveProvider = (
 
 export const resolveSummaryConfigFromEnv = (): SummaryConfig => {
   const env = resolveEnv()
-  const explicit = normalizeProvider(env.COCLERK_SUMMARY_PROVIDER)
+  const explicit = normalizeProvider(env.SUMMARY_PROVIDER)
   const openRouterKey = env.OPENROUTER_API_KEY
   const openAiKey = env.OPENAI_API_KEY
   const provider = resolveProvider(
@@ -77,9 +77,9 @@ export const resolveSummaryConfigFromEnv = (): SummaryConfig => {
   )
   const model =
     provider === 'openrouter'
-      ? (env.COCLERK_SUMMARY_MODEL ?? env.OPENROUTER_MODEL ?? 'openrouter/auto')
+      ? (env.SUMMARY_MODEL ?? env.OPENROUTER_MODEL ?? 'openrouter/auto')
       : provider === 'openai'
-        ? (env.COCLERK_SUMMARY_MODEL ?? 'gpt-4o-mini')
+        ? (env.SUMMARY_MODEL ?? 'gpt-4o-mini')
         : 'stub'
   return {
     provider,
