@@ -31,12 +31,12 @@ var translationsTranslateCmd = &cobra.Command{
 		}
 		cmdArgs := map[string]any{
 			"text": text,
-			"to":   to,
+			"targetLanguage": to,
 		}
 		if from != "" {
-			cmdArgs["from"] = from
+			cmdArgs["sourceLanguage"] = from
 		}
-		val, err := client.Action(cmd.Context(), "translations:translate", cmdArgs)
+		val, err := client.Action(cmd.Context(), "translations:translateSegment", cmdArgs)
 		return printResult(val, err, "translating text")
 	},
 }

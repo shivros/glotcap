@@ -19,7 +19,7 @@ var accountEmailChangeStatusCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "account:getEmailChangeStatus", map[string]any{})
+		val, err := client.Query(cmd.Context(), "emailChange:getEmailChangeStatus", map[string]any{})
 		return printResult(val, err, "getting email change status")
 	},
 }
@@ -33,7 +33,7 @@ var accountEmailChangeRequestCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "account:requestEmailChange", map[string]any{
+		val, err := client.Action(cmd.Context(), "emailChange:requestEmailChange", map[string]any{
 			"newEmail": args[0],
 		})
 		return printResult(val, err, "requesting email change")
@@ -49,8 +49,8 @@ var accountEmailChangeVerifyCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "account:verifyEmailChange", map[string]any{
-			"code": args[0],
+		val, err := client.Action(cmd.Context(), "emailChange:verifyEmailChange", map[string]any{
+			"token": args[0],
 		})
 		return printResult(val, err, "verifying email change")
 	},
@@ -64,7 +64,7 @@ var accountEmailChangeCancelCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "account:cancelEmailChange", map[string]any{})
+		val, err := client.Mutation(cmd.Context(), "emailChange:cancelEmailChange", map[string]any{})
 		return printResult(val, err, "canceling email change")
 	},
 }
@@ -77,7 +77,7 @@ var accountEmailChangeResendCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "account:resendEmailChange", map[string]any{})
+		val, err := client.Action(cmd.Context(), "emailChange:resendEmailChangeVerification", map[string]any{})
 		return printResult(val, err, "resending email change")
 	},
 }

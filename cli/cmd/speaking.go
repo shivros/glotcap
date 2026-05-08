@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -43,7 +42,7 @@ var speakingStartCmd = &cobra.Command{
 			cmdArgs["mode"] = mode
 		}
 
-		val, err := client.Mutation(cmd.Context(), "speaking:start", cmdArgs)
+		val, err := client.Mutation(cmd.Context(), "speaking:startSession", cmdArgs)
 		return printResult(val, err, "starting speaking session")
 	},
 }
@@ -57,7 +56,7 @@ var speakingEndCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "speaking:end", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:endSession", map[string]any{
 			"sessionId": args[0],
 			"requestId": uuid.New().String(),
 		})
@@ -74,7 +73,7 @@ var speakingPauseCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "speaking:pause", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:pauseSession", map[string]any{
 			"sessionId": args[0],
 			"requestId": uuid.New().String(),
 		})
@@ -91,7 +90,7 @@ var speakingResumeCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "speaking:resume", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:resumeSession", map[string]any{
 			"sessionId": args[0],
 			"requestId": uuid.New().String(),
 		})
@@ -108,7 +107,7 @@ var speakingGetCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "speaking:get", map[string]any{
+		val, err := client.Query(cmd.Context(), "speaking:getSession", map[string]any{
 			"sessionId": args[0],
 		})
 		return printResult(val, err, "getting speaking session")
@@ -132,7 +131,7 @@ var speakingListCmd = &cobra.Command{
 		if cursor != "" {
 			cmdArgs["cursor"] = cursor
 		}
-		val, err := client.Query(cmd.Context(), "speaking:list", cmdArgs)
+		val, err := client.Query(cmd.Context(), "speaking:listRecentSessions", cmdArgs)
 		return printResult(val, err, "listing speaking sessions")
 	},
 }
@@ -146,7 +145,7 @@ var speakingTranscriptCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "speaking:getTranscript", map[string]any{
+		val, err := client.Query(cmd.Context(), "speaking:getSessionTranscript", map[string]any{
 			"sessionId": args[0],
 		})
 		return printResult(val, err, "getting transcript")
@@ -170,20 +169,21 @@ var speakingFeedCmd = &cobra.Command{
 		if cursor != "" {
 			cmdArgs["cursor"] = cursor
 		}
-		val, err := client.Query(cmd.Context(), "speaking:feed", cmdArgs)
+		val, err := client.Query(cmd.Context(), "speaking:getSessionFeed", cmdArgs)
 		return printResult(val, err, "getting speaking feed")
 	},
 }
 
 var speakingUsageCmd = &cobra.Command{
-	Use:   "usage",
-	Short: "Get speaking usage statistics",
+	Use:   "usage <sessionId>",
+	Short: "Get speaking usage statistics for a session",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := getClient()
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "speaking:getUsage", map[string]any{})
+		val, err := client.Query(cmd.Context(), "speaking:getSessionUsage", map[string]any{"sessionId": args[0]})
 		return printResult(val, err, "getting usage")
 	},
 }
@@ -223,18 +223,13 @@ var speakingSetTurnCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		turn, _ := cmd.Flags().GetString("turn")
-		if turn == "" {
-			return fmt.Errorf("--turn is required")
+		turnID, _ := cmd.Flags().GetString("turn-id")
+		if turnID == "" {
+			return fmt.Errorf("--turn-id is required")
 		}
-		var turnData map[string]any
-		if err := parseJSONArg(turn, &turnData); err != nil {
-			return fmt.Errorf("--turn must be valid JSON: %w", err)
-		}
-		val, err := client.Mutation(cmd.Context(), "speaking:setTurn", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:setActiveTurnId", map[string]any{
 			"sessionId": args[0],
-			"turn":      turnData,
-			"requestId": uuid.New().String(),
+			"turnId":    turnID,
 		})
 		return printResult(val, err, "setting turn")
 	},
@@ -252,7 +247,7 @@ func init() {
 	speakingFeedCmd.Flags().Int("limit", 0, "max number of items to return")
 	speakingFeedCmd.Flags().String("cursor", "", "pagination cursor")
 
-	speakingSetTurnCmd.Flags().String("turn", "", "turn data as JSON string (required)")
+	speakingSetTurnCmd.Flags().String("turn-id", "", "turn ID (required)")
 
 	speakingCmd.AddCommand(speakingStartCmd)
 	speakingCmd.AddCommand(speakingEndCmd)
@@ -268,6 +263,3 @@ func init() {
 	speakingCmd.AddCommand(speakingSetTurnCmd)
 	rootCmd.AddCommand(speakingCmd)
 }
-
-// compile-time check for json import
-var _ = json.Marshal

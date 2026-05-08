@@ -32,10 +32,10 @@ var ttsSynthesizeCmd = &cobra.Command{
 			"text": text,
 		}
 		if language != "" {
-			cmdArgs["language"] = language
+			cmdArgs["languageCode"] = language
 		}
 		if voice != "" {
-			cmdArgs["voice"] = voice
+			cmdArgs["voiceId"] = voice
 		}
 		val, err := client.Action(cmd.Context(), "tts:synthesize", cmdArgs)
 		return printResult(val, err, "synthesizing speech")
@@ -60,12 +60,12 @@ var ttsStreamCmd = &cobra.Command{
 			"text": text,
 		}
 		if language != "" {
-			cmdArgs["language"] = language
+			cmdArgs["languageCode"] = language
 		}
 		if voice != "" {
-			cmdArgs["voice"] = voice
+			cmdArgs["voiceId"] = voice
 		}
-		stream, err := client.ActionStream(cmd.Context(), "tts:stream", cmdArgs)
+		stream, err := client.HTTPStream(cmd.Context(), "/tts-stream", cmdArgs)
 		if err != nil {
 			return fmt.Errorf("streaming TTS: %w", err)
 		}

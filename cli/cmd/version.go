@@ -12,15 +12,15 @@ var Version = "0.1.0-dev"
 var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the CLI version",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if isJSON() {
-			printJSON(map[string]string{
+			return printJSON(map[string]string{
 				"version": Version,
 				"cli":     "glotcap",
 			})
-		} else {
-			fmt.Println("glotcap CLI v" + Version)
 		}
+		fmt.Println("glotcap CLI v" + Version)
+		return nil
 	},
 }
 

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -31,7 +30,7 @@ var eventsAppendCmd = &cobra.Command{
 		if err := parseJSONArg(eventsJSON, &eventsData); err != nil {
 			return fmt.Errorf("--events must be a valid JSON array: %w", err)
 		}
-		val, err := client.Mutation(cmd.Context(), "events:append", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:appendEvent", map[string]any{
 			"sessionId": args[0],
 			"events":    eventsData,
 			"requestId": uuid.New().String(),
@@ -57,7 +56,7 @@ var eventsUpsertTranscriptCmd = &cobra.Command{
 		if err := parseJSONArg(transcriptJSON, &transcriptData); err != nil {
 			return fmt.Errorf("--transcript must be a valid JSON object: %w", err)
 		}
-		val, err := client.Mutation(cmd.Context(), "events:upsertTranscript", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:upsertUserTranscript", map[string]any{
 			"sessionId":  args[0],
 			"transcript": transcriptData,
 			"requestId":  uuid.New().String(),
@@ -83,7 +82,7 @@ var eventsSaveTranslationCmd = &cobra.Command{
 		if err := parseJSONArg(translationJSON, &translationData); err != nil {
 			return fmt.Errorf("--translation must be a valid JSON object: %w", err)
 		}
-		val, err := client.Mutation(cmd.Context(), "events:saveTranslation", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "speaking:saveEventTranslation", map[string]any{
 			"sessionId":   args[0],
 			"translation": translationData,
 			"requestId":   uuid.New().String(),
@@ -102,5 +101,3 @@ func init() {
 	eventsCmd.AddCommand(eventsSaveTranslationCmd)
 	rootCmd.AddCommand(eventsCmd)
 }
-
-var _ = json.Marshal

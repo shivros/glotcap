@@ -14,21 +14,24 @@ type Config struct {
 }
 
 // ConfigPath returns the path to the config file, respecting XDG_CONFIG_HOME.
-func ConfigPath() string {
+func ConfigPath() (string, error) {
 	configDir := os.Getenv("XDG_CONFIG_HOME")
 	if configDir == "" {
-		home, err := os.UserHomeDir()
+		var err error
+		configDir, err = os.UserConfigDir()
 		if err != nil {
-			home = "~"
+			return "", fmt.Errorf("resolving user config dir: %w", err)
 		}
-		configDir = filepath.Join(home, ".config")
 	}
-	return filepath.Join(configDir, "glotcap", "config.json")
+	return filepath.Join(configDir, "glotcap", "config.json"), nil
 }
 
 // Load reads the config file from disk.
 func Load() (*Config, error) {
-	path := ConfigPath()
+	path, err := ConfigPath()
+	if err != nil {
+		return nil, err
+	}
 	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -45,7 +48,10 @@ func Load() (*Config, error) {
 
 // Save writes the config file to disk, creating parent directories as needed.
 func (c *Config) Save() error {
-	path := ConfigPath()
+	path, err := ConfigPath()
+	if err != nil {
+		return err
+	}
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		return fmt.Errorf("creating config directory %s: %w", dir, err)
@@ -82,7 +88,10 @@ func Resolve() (*Config, error) {
 
 // Delete removes the config file from disk.
 func Delete() error {
-	path := ConfigPath()
+	path, err := ConfigPath()
+	if err != nil {
+		return err
+	}
 	if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("deleting config file %s: %w", path, err)
 	}

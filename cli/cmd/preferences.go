@@ -18,7 +18,7 @@ var preferencesGetLanguageCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "preferences:getLanguage", map[string]any{})
+		val, err := client.Query(cmd.Context(), "userPreferences:getMyLanguagePreference", map[string]any{})
 		return printResult(val, err, "getting language preferences")
 	},
 }

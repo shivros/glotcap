@@ -38,7 +38,11 @@ var authLoginCmd = &cobra.Command{
 			return fmt.Errorf("saving config: %w", err)
 		}
 
-		fmt.Fprintln(os.Stderr, "Configuration saved to", config.ConfigPath())
+		configPath, err := config.ConfigPath()
+		if err != nil {
+			return fmt.Errorf("resolving config path: %w", err)
+		}
+		fmt.Fprintln(os.Stderr, "Configuration saved to", configPath)
 		return nil
 	},
 }
