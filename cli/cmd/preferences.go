@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/spf13/cobra"
 )
 
@@ -25,34 +27,25 @@ var preferencesGetLanguageCmd = &cobra.Command{
 
 var preferencesSetLanguageCmd = &cobra.Command{
 	Use:   "set-language",
-	Short: "Set language preferences",
+	Short: "Set language preference",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := getClient()
 		if err != nil {
 			return err
 		}
-		language, _ := cmd.Flags().GetString("language")
-		level, _ := cmd.Flags().GetString("level")
-		native, _ := cmd.Flags().GetString("native-language")
-		cmdArgs := map[string]any{}
-		if language != "" {
-			cmdArgs["language"] = language
+		languageId, _ := cmd.Flags().GetString("language-id")
+		if languageId == "" {
+			return fmt.Errorf("--language-id is required")
 		}
-		if level != "" {
-			cmdArgs["level"] = level
-		}
-		if native != "" {
-			cmdArgs["nativeLanguage"] = native
-		}
-		val, err := client.Mutation(cmd.Context(), "preferences:setLanguage", cmdArgs)
+		val, err := client.Mutation(cmd.Context(), "userPreferences:setMyLanguagePreference", map[string]any{
+			"languageId": languageId,
+		})
 		return printResult(val, err, "setting language preferences")
 	},
 }
 
 func init() {
-	preferencesSetLanguageCmd.Flags().String("language", "", "target language code (e.g. 'es')")
-	preferencesSetLanguageCmd.Flags().String("level", "", "proficiency level")
-	preferencesSetLanguageCmd.Flags().String("native-language", "", "native language code")
+	preferencesSetLanguageCmd.Flags().String("language-id", "", "language ID to set as preference (required)")
 
 	preferencesCmd.AddCommand(preferencesGetLanguageCmd)
 	preferencesCmd.AddCommand(preferencesSetLanguageCmd)

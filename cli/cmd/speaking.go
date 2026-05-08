@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -21,22 +20,30 @@ var speakingStartCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		language, _ := cmd.Flags().GetString("language")
-		topic, _ := cmd.Flags().GetString("topic")
-		level, _ := cmd.Flags().GetString("level")
+		targetLanguage, _ := cmd.Flags().GetString("target-language")
+		if targetLanguage == "" {
+			return fmt.Errorf("--target-language is required")
+		}
+		sourceLanguage, _ := cmd.Flags().GetString("source-language")
+		demoId, _ := cmd.Flags().GetString("demo-id")
+		limitMs, _ := cmd.Flags().GetInt("limit-ms")
+		turnId, _ := cmd.Flags().GetString("turn-id")
 		mode, _ := cmd.Flags().GetString("mode")
 
 		cmdArgs := map[string]any{
-			"requestId": uuid.New().String(),
+			"targetLanguage": targetLanguage,
 		}
-		if language != "" {
-			cmdArgs["language"] = language
+		if sourceLanguage != "" {
+			cmdArgs["sourceLanguage"] = sourceLanguage
 		}
-		if topic != "" {
-			cmdArgs["topic"] = topic
+		if demoId != "" {
+			cmdArgs["demoId"] = demoId
 		}
-		if level != "" {
-			cmdArgs["level"] = level
+		if limitMs > 0 {
+			cmdArgs["limitMs"] = limitMs
+		}
+		if turnId != "" {
+			cmdArgs["turnId"] = turnId
 		}
 		if mode != "" {
 			cmdArgs["mode"] = mode
@@ -56,10 +63,14 @@ var speakingEndCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "speaking:endSession", map[string]any{
+		cmdArgs := map[string]any{
 			"sessionId": args[0],
-			"requestId": uuid.New().String(),
-		})
+		}
+		terminationReason, _ := cmd.Flags().GetString("termination-reason")
+		if terminationReason != "" {
+			cmdArgs["terminationReason"] = terminationReason
+		}
+		val, err := client.Mutation(cmd.Context(), "speaking:endSession", cmdArgs)
 		return printResult(val, err, "ending speaking session")
 	},
 }
@@ -75,7 +86,6 @@ var speakingPauseCmd = &cobra.Command{
 		}
 		val, err := client.Mutation(cmd.Context(), "speaking:pauseSession", map[string]any{
 			"sessionId": args[0],
-			"requestId": uuid.New().String(),
 		})
 		return printResult(val, err, "pausing speaking session")
 	},
@@ -92,7 +102,6 @@ var speakingResumeCmd = &cobra.Command{
 		}
 		val, err := client.Mutation(cmd.Context(), "speaking:resumeSession", map[string]any{
 			"sessionId": args[0],
-			"requestId": uuid.New().String(),
 		})
 		return printResult(val, err, "resuming speaking session")
 	},
@@ -123,13 +132,9 @@ var speakingListCmd = &cobra.Command{
 			return err
 		}
 		limit, _ := cmd.Flags().GetInt("limit")
-		cursor, _ := cmd.Flags().GetString("cursor")
 		cmdArgs := map[string]any{}
 		if limit > 0 {
 			cmdArgs["limit"] = limit
-		}
-		if cursor != "" {
-			cmdArgs["cursor"] = cursor
 		}
 		val, err := client.Query(cmd.Context(), "speaking:listRecentSessions", cmdArgs)
 		return printResult(val, err, "listing speaking sessions")
@@ -145,29 +150,33 @@ var speakingTranscriptCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "speaking:getSessionTranscript", map[string]any{
+		limit, _ := cmd.Flags().GetInt("limit")
+		cmdArgs := map[string]any{
 			"sessionId": args[0],
-		})
+		}
+		if limit > 0 {
+			cmdArgs["limit"] = limit
+		}
+		val, err := client.Query(cmd.Context(), "speaking:getSessionTranscript", cmdArgs)
 		return printResult(val, err, "getting transcript")
 	},
 }
 
 var speakingFeedCmd = &cobra.Command{
-	Use:   "feed",
-	Short: "Get the speaking session feed",
+	Use:   "feed <sessionId>",
+	Short: "Get the speaking session event feed",
+	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		client, err := getClient()
 		if err != nil {
 			return err
 		}
 		limit, _ := cmd.Flags().GetInt("limit")
-		cursor, _ := cmd.Flags().GetString("cursor")
-		cmdArgs := map[string]any{}
+		cmdArgs := map[string]any{
+			"sessionId": args[0],
+		}
 		if limit > 0 {
 			cmdArgs["limit"] = limit
-		}
-		if cursor != "" {
-			cmdArgs["cursor"] = cursor
 		}
 		val, err := client.Query(cmd.Context(), "speaking:getSessionFeed", cmdArgs)
 		return printResult(val, err, "getting speaking feed")
@@ -235,19 +244,46 @@ var speakingSetTurnCmd = &cobra.Command{
 	},
 }
 
+var speakingRecordUsageCmd = &cobra.Command{
+	Use:   "record-usage <sessionId>",
+	Short: "Record usage time for a speaking session",
+	Args:  cobra.ExactArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		client, err := getClient()
+		if err != nil {
+			return err
+		}
+		deltaMs, _ := cmd.Flags().GetInt("delta-ms")
+		if deltaMs <= 0 {
+			return fmt.Errorf("--delta-ms is required and must be > 0")
+		}
+		val, err := client.Mutation(cmd.Context(), "speaking:recordUsage", map[string]any{
+			"sessionId": args[0],
+			"deltaMs":   deltaMs,
+		})
+		return printResult(val, err, "recording usage")
+	},
+}
+
 func init() {
-	speakingStartCmd.Flags().String("language", "", "target language code (e.g. 'es', 'fr')")
-	speakingStartCmd.Flags().String("topic", "", "conversation topic")
-	speakingStartCmd.Flags().String("level", "", "proficiency level (e.g. 'beginner', 'intermediate')")
-	speakingStartCmd.Flags().String("mode", "", "session mode (e.g. 'conversation', 'drill')")
+	speakingStartCmd.Flags().String("target-language", "", "target language code (e.g. 'es', 'fr') (required)")
+	speakingStartCmd.Flags().String("source-language", "", "source language code")
+	speakingStartCmd.Flags().String("demo-id", "", "demo session ID")
+	speakingStartCmd.Flags().Int("limit-ms", 0, "session time limit in milliseconds")
+	speakingStartCmd.Flags().String("turn-id", "", "initial turn ID")
+	speakingStartCmd.Flags().String("mode", "", "session mode: 'demo' or 'standard'")
+
+	speakingEndCmd.Flags().String("termination-reason", "", "termination reason: 'manual', 'limit_reached', or 'error'")
 
 	speakingListCmd.Flags().Int("limit", 0, "max number of sessions to return")
-	speakingListCmd.Flags().String("cursor", "", "pagination cursor")
 
-	speakingFeedCmd.Flags().Int("limit", 0, "max number of items to return")
-	speakingFeedCmd.Flags().String("cursor", "", "pagination cursor")
+	speakingTranscriptCmd.Flags().Int("limit", 0, "max number of transcript entries (default 200)")
+
+	speakingFeedCmd.Flags().Int("limit", 0, "max number of feed items (default 60)")
 
 	speakingSetTurnCmd.Flags().String("turn-id", "", "turn ID (required)")
+
+	speakingRecordUsageCmd.Flags().Int("delta-ms", 0, "usage delta in milliseconds (required)")
 
 	speakingCmd.AddCommand(speakingStartCmd)
 	speakingCmd.AddCommand(speakingEndCmd)
@@ -261,5 +297,6 @@ func init() {
 	speakingCmd.AddCommand(speakingDailyUsageCmd)
 	speakingCmd.AddCommand(speakingDemoLimitCmd)
 	speakingCmd.AddCommand(speakingSetTurnCmd)
+	speakingCmd.AddCommand(speakingRecordUsageCmd)
 	rootCmd.AddCommand(speakingCmd)
 }

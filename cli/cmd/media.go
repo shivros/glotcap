@@ -20,13 +20,7 @@ var mediaUploadUrlCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		contentType, _ := cmd.Flags().GetString("content-type")
-		if contentType == "" {
-			return fmt.Errorf("--content-type is required")
-		}
-		val, err := client.Mutation(cmd.Context(), "media:getUploadUrl", map[string]any{
-			"contentType": contentType,
-		})
+		val, err := client.Mutation(cmd.Context(), "mediaTools:generateUploadUrl", map[string]any{})
 		return printResult(val, err, "getting upload URL")
 	},
 }
@@ -39,19 +33,44 @@ var mediaCreateJobCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		storageId, _ := cmd.Flags().GetString("storage-id")
-		jobType, _ := cmd.Flags().GetString("type")
-		if storageId == "" {
-			return fmt.Errorf("--storage-id is required")
+		tool, _ := cmd.Flags().GetString("tool")
+		inputStorageId, _ := cmd.Flags().GetString("input-storage-id")
+		inputFileName, _ := cmd.Flags().GetString("input-file-name")
+		if tool == "" {
+			return fmt.Errorf("--tool is required (transcript, srt, or bilingual)")
 		}
-		if jobType == "" {
-			return fmt.Errorf("--type is required")
+		if inputStorageId == "" {
+			return fmt.Errorf("--input-storage-id is required")
+		}
+		if inputFileName == "" {
+			return fmt.Errorf("--input-file-name is required")
 		}
 		cmdArgs := map[string]any{
-			"storageId": storageId,
-			"type":      jobType,
+			"tool":            tool,
+			"inputStorageId":  inputStorageId,
+			"inputFileName":   inputFileName,
 		}
-		val, err := client.Mutation(cmd.Context(), "media:createJob", cmdArgs)
+		inputMimeType, _ := cmd.Flags().GetString("input-mime-type")
+		if inputMimeType != "" {
+			cmdArgs["inputMimeType"] = inputMimeType
+		}
+		sourceLanguage, _ := cmd.Flags().GetString("source-language")
+		if sourceLanguage != "" {
+			cmdArgs["sourceLanguage"] = sourceLanguage
+		}
+		targetLanguage, _ := cmd.Flags().GetString("target-language")
+		if targetLanguage != "" {
+			cmdArgs["targetLanguage"] = targetLanguage
+		}
+		delimiter, _ := cmd.Flags().GetString("delimiter")
+		if delimiter != "" {
+			cmdArgs["delimiter"] = delimiter
+		}
+		bilingualOutput, _ := cmd.Flags().GetString("bilingual-output")
+		if bilingualOutput != "" {
+			cmdArgs["bilingualOutput"] = bilingualOutput
+		}
+		val, err := client.Mutation(cmd.Context(), "mediaTools:createJob", cmdArgs)
 		return printResult(val, err, "creating media job")
 	},
 }
@@ -65,7 +84,7 @@ var mediaGetJobCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "media:getJob", map[string]any{
+		val, err := client.Query(cmd.Context(), "mediaTools:getJob", map[string]any{
 			"jobId": args[0],
 		})
 		return printResult(val, err, "getting media job")
@@ -80,25 +99,25 @@ var mediaListJobsCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		status, _ := cmd.Flags().GetString("status")
 		limit, _ := cmd.Flags().GetInt("limit")
 		cmdArgs := map[string]any{}
-		if status != "" {
-			cmdArgs["status"] = status
-		}
 		if limit > 0 {
 			cmdArgs["limit"] = limit
 		}
-		val, err := client.Query(cmd.Context(), "media:listJobs", cmdArgs)
+		val, err := client.Query(cmd.Context(), "mediaTools:listRecentJobs", cmdArgs)
 		return printResult(val, err, "listing media jobs")
 	},
 }
 
 func init() {
-	mediaUploadUrlCmd.Flags().String("content-type", "", "MIME type of the file to upload (required)")
-	mediaCreateJobCmd.Flags().String("storage-id", "", "Convex storage ID of uploaded file (required)")
-	mediaCreateJobCmd.Flags().String("type", "", "type of processing job (required)")
-	mediaListJobsCmd.Flags().String("status", "", "filter by job status")
+	mediaCreateJobCmd.Flags().String("tool", "", "processing tool: transcript, srt, or bilingual (required)")
+	mediaCreateJobCmd.Flags().String("input-storage-id", "", "Convex storage ID of uploaded file (required)")
+	mediaCreateJobCmd.Flags().String("input-file-name", "", "original file name (required)")
+	mediaCreateJobCmd.Flags().String("input-mime-type", "", "MIME type of the input file")
+	mediaCreateJobCmd.Flags().String("source-language", "", "source language code")
+	mediaCreateJobCmd.Flags().String("target-language", "", "target language code")
+	mediaCreateJobCmd.Flags().String("delimiter", "", "delimiter for bilingual output")
+	mediaCreateJobCmd.Flags().String("bilingual-output", "", "bilingual output format: transcript, srt, or both")
 	mediaListJobsCmd.Flags().Int("limit", 0, "max number of jobs to return")
 
 	mediaCmd.AddCommand(mediaUploadUrlCmd)

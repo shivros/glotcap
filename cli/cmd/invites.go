@@ -19,7 +19,7 @@ var invitesValidateCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Query(cmd.Context(), "invites:validate", map[string]any{
+		val, err := client.Query(cmd.Context(), "invites:validateInvite", map[string]any{
 			"code": args[0],
 		})
 		return printResult(val, err, "validating invite")
@@ -35,7 +35,7 @@ var invitesConsumeCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		val, err := client.Mutation(cmd.Context(), "invites:consume", map[string]any{
+		val, err := client.Mutation(cmd.Context(), "invites:consumeInvite", map[string]any{
 			"code": args[0],
 		})
 		return printResult(val, err, "consuming invite")
