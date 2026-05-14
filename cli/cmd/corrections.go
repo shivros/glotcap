@@ -38,7 +38,7 @@ var correctionsAnalyzeCmd = &cobra.Command{
 			cmdArgs["model"] = model
 		}
 		temperature, _ := cmd.Flags().GetFloat64("temperature")
-		if temperature > 0 {
+		if cmd.Flags().Changed("temperature") {
 			cmdArgs["temperature"] = temperature
 		}
 		maxCorrections, _ := cmd.Flags().GetInt("max-corrections")

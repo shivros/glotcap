@@ -39,7 +39,7 @@ var speakingStartCmd = &cobra.Command{
 		if demoId != "" {
 			cmdArgs["demoId"] = demoId
 		}
-		if limitMs > 0 {
+		if cmd.Flags().Changed("limit-ms") {
 			cmdArgs["limitMs"] = limitMs
 		}
 		if turnId != "" {
