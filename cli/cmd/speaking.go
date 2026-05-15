@@ -133,7 +133,7 @@ var speakingListCmd = &cobra.Command{
 		}
 		limit, _ := cmd.Flags().GetInt("limit")
 		cmdArgs := map[string]any{}
-		if limit > 0 {
+		if cmd.Flags().Changed("limit") {
 			cmdArgs["limit"] = limit
 		}
 		val, err := client.Query(cmd.Context(), "speaking:listRecentSessions", cmdArgs)
@@ -154,7 +154,7 @@ var speakingTranscriptCmd = &cobra.Command{
 		cmdArgs := map[string]any{
 			"sessionId": args[0],
 		}
-		if limit > 0 {
+		if cmd.Flags().Changed("limit") {
 			cmdArgs["limit"] = limit
 		}
 		val, err := client.Query(cmd.Context(), "speaking:getSessionTranscript", cmdArgs)
@@ -175,7 +175,7 @@ var speakingFeedCmd = &cobra.Command{
 		cmdArgs := map[string]any{
 			"sessionId": args[0],
 		}
-		if limit > 0 {
+		if cmd.Flags().Changed("limit") {
 			cmdArgs["limit"] = limit
 		}
 		val, err := client.Query(cmd.Context(), "speaking:getSessionFeed", cmdArgs)

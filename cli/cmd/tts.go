@@ -50,7 +50,7 @@ var ttsSynthesizeCmd = &cobra.Command{
 			cmdArgs["outputFormat"] = outputFormat
 		}
 		sampleRateHertz, _ := cmd.Flags().GetInt("sample-rate-hertz")
-		if sampleRateHertz > 0 {
+		if cmd.Flags().Changed("sample-rate-hertz") {
 			cmdArgs["sampleRateHertz"] = sampleRateHertz
 		}
 		prompt, _ := cmd.Flags().GetString("prompt")
@@ -58,7 +58,7 @@ var ttsSynthesizeCmd = &cobra.Command{
 			cmdArgs["prompt"] = prompt
 		}
 		optimizeStreamingLatency, _ := cmd.Flags().GetInt("optimize-streaming-latency")
-		if optimizeStreamingLatency > 0 {
+		if cmd.Flags().Changed("optimize-streaming-latency") {
 			cmdArgs["optimizeStreamingLatency"] = optimizeStreamingLatency
 		}
 		val, err := client.Action(cmd.Context(), "tts:synthesize", cmdArgs)
@@ -102,7 +102,7 @@ var ttsStreamCmd = &cobra.Command{
 			cmdArgs["outputFormat"] = outputFormat
 		}
 		sampleRateHertz, _ := cmd.Flags().GetInt("sample-rate-hertz")
-		if sampleRateHertz > 0 {
+		if cmd.Flags().Changed("sample-rate-hertz") {
 			cmdArgs["sampleRateHertz"] = sampleRateHertz
 		}
 		prompt, _ := cmd.Flags().GetString("prompt")
@@ -110,7 +110,7 @@ var ttsStreamCmd = &cobra.Command{
 			cmdArgs["prompt"] = prompt
 		}
 		optimizeStreamingLatency, _ := cmd.Flags().GetInt("optimize-streaming-latency")
-		if optimizeStreamingLatency > 0 {
+		if cmd.Flags().Changed("optimize-streaming-latency") {
 			cmdArgs["optimizeStreamingLatency"] = optimizeStreamingLatency
 		}
 		stream, err := client.HTTPStream(cmd.Context(), "/tts-stream", cmdArgs)

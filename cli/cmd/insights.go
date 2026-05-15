@@ -28,7 +28,7 @@ var insightsListCmd = &cobra.Command{
 			"language": language,
 		}
 		halfLifeDays, _ := cmd.Flags().GetInt("half-life-days")
-		if halfLifeDays > 0 {
+		if cmd.Flags().Changed("half-life-days") {
 			cmdArgs["halfLifeDays"] = halfLifeDays
 		}
 		includeRejected, _ := cmd.Flags().GetBool("include-rejected")
@@ -77,11 +77,11 @@ var insightsExamplesCmd = &cobra.Command{
 			"canonicalKey": canonicalKey,
 		}
 		page, _ := cmd.Flags().GetInt("page")
-		if page > 0 {
+		if cmd.Flags().Changed("page") {
 			cmdArgs["page"] = page
 		}
 		pageSize, _ := cmd.Flags().GetInt("page-size")
-		if pageSize > 0 {
+		if cmd.Flags().Changed("page-size") {
 			cmdArgs["pageSize"] = pageSize
 		}
 		includeRejected, _ := cmd.Flags().GetBool("include-rejected")

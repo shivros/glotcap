@@ -15,6 +15,9 @@ func getClient() (*convex.Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("loading config: %w", err)
 	}
+	if cfg.ConvexURL == "" {
+		return nil, fmt.Errorf("convex URL not configured; set CONVEX_URL or run 'glotcap auth login'")
+	}
 	return convex.NewClient(cfg.ConvexURL, cfg.AuthToken), nil
 }
 

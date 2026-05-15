@@ -101,7 +101,7 @@ var mediaListJobsCmd = &cobra.Command{
 		}
 		limit, _ := cmd.Flags().GetInt("limit")
 		cmdArgs := map[string]any{}
-		if limit > 0 {
+		if cmd.Flags().Changed("limit") {
 			cmdArgs["limit"] = limit
 		}
 		val, err := client.Query(cmd.Context(), "mediaTools:listRecentJobs", cmdArgs)

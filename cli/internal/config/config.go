@@ -79,10 +79,6 @@ func Resolve() (*Config, error) {
 	if v := os.Getenv("CONVEX_TOKEN"); v != "" {
 		cfg.AuthToken = v
 	}
-	// Detect JOINED=1 for machine-readable mode
-	if os.Getenv("JOINED") == "1" {
-		// This is detected in cmd layer; just ensure config is resolved
-	}
 	return cfg, nil
 }
 
