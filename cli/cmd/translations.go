@@ -52,10 +52,10 @@ var translationsTranslateCmd = &cobra.Command{
 		if reason != "" {
 			cmdArgs["reason"] = reason
 		}
+	if cmd.Flags().Changed("revision") {
 		revision, _ := cmd.Flags().GetInt("revision")
-		if revision > 0 {
-			cmdArgs["revision"] = revision
-		}
+		cmdArgs["revision"] = revision
+	}
 		val, err := client.Action(cmd.Context(), "translations:translateSegment", cmdArgs)
 		return printResult(val, err, "translating text")
 	},

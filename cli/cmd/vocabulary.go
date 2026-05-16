@@ -45,10 +45,10 @@ var vocabularyAnalyzeCmd = &cobra.Command{
 		if cmd.Flags().Changed("temperature") {
 			cmdArgs["temperature"] = temperature
 		}
+	if cmd.Flags().Changed("max-vocabulary") {
 		maxVocabulary, _ := cmd.Flags().GetInt("max-vocabulary")
-		if maxVocabulary > 0 {
-			cmdArgs["maxVocabulary"] = maxVocabulary
-		}
+		cmdArgs["maxVocabulary"] = maxVocabulary
+	}
 		val, err := client.Action(cmd.Context(), "vocabulary:analyzeTurn", cmdArgs)
 		return printResult(val, err, "analyzing vocabulary")
 	},
