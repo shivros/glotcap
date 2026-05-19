@@ -21,3 +21,4 @@ dist-ssr
 Thumbs.db
 count.txt
 todos.json
+# cli/ — Go CLI, not ignored
